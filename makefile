@@ -1,8 +1,6 @@
 run: main
 	./main
 
-all: main.o
-	gcc -o main main.o
+all: main.c
+	gcc main.c -o main
 
-main.o:	main.c
-	gcc -c main.c
