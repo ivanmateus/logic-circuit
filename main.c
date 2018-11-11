@@ -1,3 +1,8 @@
+//-----------------------------------
+//Autor: Ivan Mateus de Lima Azevedo
+//No. USP: 10525602
+//-----------------------------------
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,10 +46,7 @@ int insereArv(Arv *raiz, char funcao, char *indice){
 		return 1;
 	}
 	if((*raiz)->funcao == 'N'){
-		if((*raiz)->esq == NULL){
-			inseriu = insereArv(&(*raiz)->esq, funcao, indice);
-			return inseriu;
-		}
+		inseriu = insereArv(&(*raiz)->esq, funcao, indice);
 		return inseriu;
 	}
 	if((*raiz)->funcao == 'E'){
@@ -174,9 +176,9 @@ void menu(Arv *raiz){
 	}
 
 	if(montagem){
-		char portas[100];
+		char portas[1000];
 		char *vetPortas;
-		fgets(portas, 99, stdin);
+		fgets(portas, 999, stdin);
 		vetPortas = strtok(portas, " ");
 		while(vetPortas != NULL){
 			removeNL(vetPortas);
@@ -192,7 +194,7 @@ void menu(Arv *raiz){
 		char porta_2[4];
 		scanf("%d", &numComandos);
 		while(i < numComandos){
-			scanf("%s", porta_0);
+			scanf("%s ", porta_0);
 			if(porta_0[0] == 'N'){
 				scanf("%s", porta_1);
 				insereArvPrefix(raiz, porta_0, porta_1, NULL);
@@ -206,50 +208,68 @@ void menu(Arv *raiz){
 }
 
 int numEntradas(Arv *raiz, int entradas){
-	int numEnt = 0;
+	int numEnt = entradas;
 	if((*raiz)->funcao == 'E'){
 		return (entradas + 1);
 	}
 	numEnt = numEntradas(&(*raiz)->esq, numEnt);
-	numEnt = numEntradas(&(*raiz)->dir, numEnt);
+	if((*raiz)->funcao != 'N'){
+		numEnt = numEntradas(&(*raiz)->dir, numEnt);
+	}
 	return numEnt;
 }
 
-No *procuraEntrada(Arv *raiz, int qualEntrada){
+No *procuraEntrada(Arv *raiz, int *entAtual, int *qualEntrada){
 	No *entrada = NULL;
 
 	if((*raiz)->funcao == 'E'){
-		char *ptr;
-		if(strtol((*raiz)->indice, &ptr, 10) == qualEntrada){
+		*entAtual = *entAtual + 1;
+		if(*entAtual == *qualEntrada){
 			return *raiz;
 		}
 		return NULL;
 	}
-	entrada = procuraEntrada(&(*raiz)->esq, qualEntrada);
-	if(entrada == NULL){
-		entrada = procuraEntrada(&(*raiz)->esq, qualEntrada);
+	entrada = procuraEntrada(&(*raiz)->esq, entAtual, qualEntrada);
+	if(entrada == NULL && (*raiz)->funcao != 'N'){
+		entrada = procuraEntrada(&(*raiz)->dir, entAtual, qualEntrada);
 	}
 	return entrada;
 }
 
+void imprimeRespostas(int resp[], int len){
+	int i = 0;
+	while(i < len){
+		printf("%d\n", resp[i]);
+		++i;
+	}
+}
+
 void testes(Arv *raiz){
+	int numEnt = numEntradas(raiz, 0);
 	int numTestes = 0;
 	int valorEnt = 0;
 	int i = 0;
 	int j = 1;
 	scanf("%d", &numTestes);
+	int respostas[numTestes];
 
 	while(i < numTestes){
 		j = 1;
-		while(j < numEntradas(raiz, 0) + 1){
-			scanf("%d ", &valorEnt);
-			setInfo(procuraEntrada(raiz, j), valorEnt);
+		while(j < numEnt + 1){
+			if(j == numEnt){
+				scanf("%d", &valorEnt);
+			}else{
+				scanf("%d ", &valorEnt);
+			}
+			int k = 0;
+			setInfo(procuraEntrada(raiz, &k, &j), valorEnt);
 			++j;
 		}
 		executeCirc(raiz);
-		printf("%d\n", (*raiz)->info);
+		respostas[i] = (*raiz)->info;
 		++i;
 	}
+	imprimeRespostas(respostas, numTestes);
 }
 
 int main(int argc, char const *argv[]) {
@@ -257,9 +277,7 @@ int main(int argc, char const *argv[]) {
 	Arv *raiz = criaArv();
 
 	menu(raiz);
-
-	printf("%s\n", procuraEntrada(raiz, 0)->indice);
-	printf("%s\n", procuraEntrada(raiz, 1)->indice);
+	testes(raiz);
 
 	return 0;
 }
